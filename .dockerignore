@@ -1,0 +1,4 @@
+cdk.out/
+.env/
+.vscode/
+tests/

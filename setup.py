@@ -1,5 +1,7 @@
 import setuptools
 
+CDK_VERSION = "1.62.0"
+
 
 with open("README.md") as fp:
     long_description = fp.read()
@@ -13,13 +15,16 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
 
-    author="author",
+    author="Maurice Borgmeier",
 
-    package_dir={"": "cognito_alb_fargate_demo"},
-    packages=setuptools.find_packages(where="cognito_alb_fargate_demo"),
+    package_dir={"": "infrastructure"},
+    packages=setuptools.find_packages(where="infrastructure"),
 
     install_requires=[
-        "aws-cdk.core==1.61.1",
+        f"aws-cdk.core=={CDK_VERSION}",
+        f"aws-cdk.aws-ecs-patterns=={CDK_VERSION}",
+        f"aws-cdk.aws-cognito=={CDK_VERSION}",
+        f"aws-cdk.aws-elasticloadbalancingv2-actions=={CDK_VERSION}"
     ],
 
     python_requires=">=3.6",
