@@ -11,6 +11,7 @@ import aws_cdk.aws_ecs_patterns as ecs_patterns
 import aws_cdk.aws_ecr_assets as ecr_assets
 import aws_cdk.aws_elasticloadbalancingv2 as elb
 import aws_cdk.aws_elasticloadbalancingv2_actions as elb_actions
+import aws_cdk.aws_lambda as _lambda
 import aws_cdk.aws_route53 as route53
 
 from aws_cdk import core
@@ -31,6 +32,7 @@ class DemoStack(core.Stack):
 
     user_pool_full_domain: str
     user_pool_logout_url: str
+    user_pool_user_info_url: str
 
     def __init__(self, scope: core.Construct, id: str,
                  config: configuration.Config,  **kwargs) -> None:
@@ -51,7 +53,31 @@ class DemoStack(core.Stack):
         self.user_pool = cognito.UserPool(
             self,
             "user-pool",
-            self_sign_up_enabled=True
+            account_recovery=cognito.AccountRecovery.EMAIL_AND_PHONE_WITHOUT_MFA,
+            auto_verify=cognito.AutoVerifiedAttrs(email=True, phone=True),
+            self_sign_up_enabled=True,
+            standard_attributes=cognito.StandardAttributes(
+                email=cognito.StandardAttribute(mutable=True, required=True),
+                given_name=cognito.StandardAttribute(mutable=True, required=True),
+                family_name=cognito.StandardAttribute(mutable=True, required=True)
+            )
+        )
+
+        # Add a lambda function that automatically confirms new users without
+        # email/phone verification, just for this demo
+        auto_confirm_function = _lambda.Function(
+            self,
+            "auto-confirm-function",
+            code=_lambda.Code.from_asset(
+                path=os.path.join(os.path.dirname(__file__), "..", "auto_confirm_function")
+            ),
+            handler="lambda_handler.lambda_handler",
+            runtime=_lambda.Runtime.PYTHON_3_8,
+        )
+
+        self.user_pool.add_trigger(
+            operation=cognito.UserPoolOperation.PRE_SIGN_UP,
+            fn=auto_confirm_function
         )
 
         # Add a custom domain for the hosted UI
@@ -108,6 +134,8 @@ class DemoStack(core.Stack):
                                     + f"redirect_uri={ redirect_uri }&" \
                                     + "response_type=code&state=STATE&scope=openid"
 
+        self.user_pool_user_info_url = f"{self.user_pool_full_domain}/oauth2/userInfo"
+
     def add_webapp(self):
         """
         Adds the ALB, ECS-Service and Cognito Login Action on the ALB.
@@ -155,10 +183,18 @@ class DemoStack(core.Stack):
                 image=ecs.ContainerImage.from_docker_image_asset(docker_image),
                 environment={
                     "PORT": "80",
-                    "LOGOUT_URL": self.user_pool_logout_url
+                    "LOGOUT_URL": self.user_pool_logout_url,
+                    "USER_INFO_URL": self.user_pool_user_info_url,
                 }
             ),
             redirect_http=True
+        )
+
+        # Configure the health checks to use our /healthcheck endpoint
+        fargate_service.target_group.configure_health_check(
+            enabled=True,
+            path="/healthcheck",
+            healthy_http_codes="200"
         )
 
         # Add an additional HTTPS egress rule to the Load Balancers

@@ -5,7 +5,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
-  <title>Authenticated Webapp</title>
+  <title>User Info</title>
   <style>
     body {
       font-family: Arial, Helvetica, sans-serif;
@@ -26,21 +26,18 @@
 </head>
 
 <body>
-  <h1 style="color: blue">Hello {{ username }}, welcome to the Authentication Demo!</h1>
-  <p>This token is valid until: {{ valid_until_utc }}</p>
-  <h2>JWT content</h2>
-  <h3>Decoded</h3>
-  <pre>{{ jwt_decoded }}</pre>
-  <h3>Encoded</h3>
-  <pre>{{ jwt_encoded }}</pre>
-  <hr/>
-  <h2>User ID</h2>
-  <span>{{ identity }}</span>
-  <h2>Cognito Access Token</h2>
+  <h1>User Info</h1>
+  <p>This is the response from calling the Cognito User Info endpoint</p>
+  <h2>Request Info</h2>
+  <h3>Endpoint URL</h3>
+  <pre>{{ url }}</pre>
+  <h3>Access Token</h3>
   <pre>{{ access_token }}</pre>
+  <hr/>
+  <h2>Response</h2>
+  <pre>{{ user_info }}</pre>
   <h2>Meta</h2>
-  <span>You're currently being served from host {{hostname}}.</span><br/>
-  <a href="/userinfo">User Info</a>
+  <a href="/">Home</a>
   <a href="/logout">Logout</a>
 </body>
 
