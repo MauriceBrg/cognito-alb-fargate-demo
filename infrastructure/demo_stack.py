@@ -131,8 +131,8 @@ class DemoStack(core.Stack):
         redirect_uri = urllib.parse.quote('https://' + self.config.application_dns_name)
         self.user_pool_logout_url = f"{self.user_pool_full_domain}/logout?" \
                                     + f"client_id={self.user_pool_client.user_pool_client_id}&" \
-                                    + f"redirect_uri={ redirect_uri }&" \
-                                    + "response_type=code&state=STATE&scope=openid"
+                                    + "response_type=code&state=STATE&scope=openid&" \
+                                    + f"redirect_uri={ redirect_uri }"
 
         self.user_pool_user_info_url = f"{self.user_pool_full_domain}/oauth2/userInfo"
 

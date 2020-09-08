@@ -1,4 +1,4 @@
-# User Management With Cognito, Fargate, Python and the CDK
+# User Management with Cognito, Fargate, Python and the CDK
 
 This is the repository that belongs to my talk on the topic above.
 The code in this repo sets up the following architecture:
